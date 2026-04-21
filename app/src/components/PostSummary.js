@@ -7,20 +7,33 @@ import { Link } from "react-router-dom";
 
 const cardStyle = css`
   margin: 1em;
-`
+`;
 const badgeColors = ["lightgray", "darkgray", "red", "blue", "green", "yellow"];
-const getBadgeColor = tag => {
-  let tagId = tag.split("").map(char => char.charCodeAt(0)).reduce((s,a) => s + a, 0) % 6;
+const getBadgeColor = (tag) => {
+  let tagId =
+    tag
+      .split("")
+      .map((char) => char.charCodeAt(0))
+      .reduce((s, a) => s + a, 0) % 6;
   return badgeColors[tagId];
-}
+};
 
 export default function PostSummary(props) {
   return (
     <Card className={cardStyle}>
-      <H3>{props.title}</H3>
-      by {props.author} on {(new Date(props.date)).toLocaleDateString()}<br/>
-      <Link to={`/post/${props._id}`}>Read More...</Link><br/>
-      {props && props.tags && props.tags.map(tag => (<React.Fragment><Badge variant={getBadgeColor(tag)}>{tag}</Badge> </React.Fragment>))}
+      <H3>{props.event}</H3>
+      {props.sport} by {props.athlete} on{" "}
+      {new Date(props.date).toLocaleDateString()}
+      <br />
+      <Link to={`/performance/${props._id}`}>View Details</Link>
+      <br />
+      {props &&
+        props.tags &&
+        props.tags.map((tag) => (
+          <React.Fragment>
+            <Badge variant={getBadgeColor(tag)}>{tag}</Badge>{" "}
+          </React.Fragment>
+        ))}
     </Card>
-  )
+  );
 }

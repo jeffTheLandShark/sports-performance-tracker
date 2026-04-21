@@ -35,10 +35,10 @@ const mainStyle = css`
 `;
 
 export default function Layout(props) {
-  return(
+  return (
     <div className={gridStyle}>
       <section className={headerStyle}>
-        <Header title="Sample Blog"/>
+        <Header title="Sports Performance Tracker" />
       </section>
       <Navigation className={sideNavStyle} />
 
@@ -46,5 +46,5 @@ export default function Layout(props) {
         <Outlet />
       </section>
     </div>
-  )
+  );
 }

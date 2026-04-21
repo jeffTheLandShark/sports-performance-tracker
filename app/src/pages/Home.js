@@ -4,22 +4,22 @@ import PostSummary from "../components/PostSummary";
 import { baseUrl } from "../config";
 
 export default function App() {
-  let [posts, setPosts] = useState([]);
+  let [performances, setPerformances] = useState([]);
 
   useEffect(() => {
-    const loadPosts = async () => {
-      let results = await fetch(`${baseUrl}/posts/latest`).then(resp => resp.json());
-      setPosts(results);
+    const loadPerformances = async () => {
+      let results = await fetch(`${baseUrl}/performances/latest`).then(resp => resp.json());
+      setPerformances(results);
     }
 
-    loadPosts();
+    loadPerformances();
   }, []);
 
   return (
     <React.Fragment>
-      <H2>Latest Articles</H2>
+      <H2>Recent Performances</H2>
       <div>
-        {posts.map(post => {
+        {performances.map(post => {
           return(
             <PostSummary {...post} key={post._id} />
           )
