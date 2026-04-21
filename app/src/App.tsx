@@ -1,7 +1,7 @@
 import "./styles.css";
 import "./fonts.css";
 
-import LeafygreenProvider from '@leafygreen-ui/leafygreen-provider';
+import LeafygreenProvider from "@leafygreen-ui/leafygreen-provider";
 import Layout from "./components/Layout";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
@@ -10,7 +10,6 @@ import Archive from "./pages/Archive";
 import Create from "./pages/Create";
 import Post from "./pages/Post";
 import Edit from "./pages/Edit";
-
 
 function App() {
   return (
@@ -21,7 +20,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/archive" element={<Archive />} />
             <Route path="/create" element={<Create />} />
-            <Route path="/post/:id" element={<Post />} />
+            <Route path="/performance/:id" element={<Post />} />
             <Route path="/edit/:id" element={<Edit />} />
           </Route>
         </Routes>
