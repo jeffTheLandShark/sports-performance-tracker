@@ -7,6 +7,17 @@ import Toast from "@leafygreen-ui/toast";
 import { css } from "@leafygreen-ui/emotion";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseUrl } from "../config";
+import StatsFieldEditor from "../components/StatsFieldEditor";
+import {
+  CUSTOM_OPTION,
+  SPORT_CATALOG,
+  getSportOptions,
+  getEventOptions,
+  getTemplateRows,
+  mergeTemplateRows,
+  rowsToStatsObject,
+  statsObjectToRows,
+} from "../performanceCatalog";
 
 const formStyle = css`
   height: 100vh;
@@ -18,29 +29,99 @@ const formStyle = css`
   }
 `;
 
+const selectGroupStyle = css`
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 8px;
+    color: #5f6b7a;
+    font-size: 13px;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    background: #fff;
+  }
+`;
+
 export default function App() {
   let [athlete, setAthlete] = useState("Brother");
   let [sport, setSport] = useState("");
+  let [customSport, setCustomSport] = useState("");
   let [event, setEvent] = useState("");
+  let [customEvent, setCustomEvent] = useState("");
   let [date, setDate] = useState("");
-  let [stats, setStats] = useState('{"time": 11.2}');
+  let [statRows, setStatRows] = useState([]);
   let [tags, setTags] = useState("");
   let [notes, setNotes] = useState("");
   let [toastOpen, setToastOpen] = useState(false);
   let [toastError, setToastError] = useState("");
   const params = useParams();
   const navigate = useNavigate();
+  const sportOptions = getSportOptions();
+  const eventOptions = getEventOptions(sport);
+  const selectedSport = sport === CUSTOM_OPTION ? customSport.trim() : sport;
+  const selectedEvent = event === CUSTOM_OPTION ? customEvent.trim() : event;
+
+  const updateStatRow = (index, field, value) => {
+    setStatRows((rows) =>
+      rows.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, [field]: value } : row,
+      ),
+    );
+  };
+
+  const setEventWithTemplate = (nextEvent) => {
+    setEvent(nextEvent);
+    setCustomEvent("");
+    const templateRows = getTemplateRows(sport, nextEvent);
+    setStatRows((currentRows) => mergeTemplateRows(templateRows, currentRows));
+  };
+
+  const handleSportChange = (nextSport) => {
+    setSport(nextSport);
+    setEvent("");
+    setCustomSport("");
+    setCustomEvent("");
+    setStatRows([]);
+  };
 
   useEffect(() => {
     const loadPost = async () => {
-      const result = await fetch(`${baseUrl}/performances/${params.id}`).then((resp) =>
-        resp.json(),
+      const result = await fetch(`${baseUrl}/performances/${params.id}`).then(
+        (resp) => resp.json(),
       );
+
+      const knownSport = Object.prototype.hasOwnProperty.call(
+        SPORT_CATALOG,
+        result.sport,
+      );
+      const baseSport = knownSport ? result.sport : CUSTOM_OPTION;
+      const knownEvent =
+        knownSport &&
+        Object.prototype.hasOwnProperty.call(
+          SPORT_CATALOG[result.sport].events,
+          result.event,
+        );
+
       setAthlete(result.athlete || "Brother");
-      setSport(result.sport || "");
-      setEvent(result.event || "");
-      setDate(result.date ? new Date(result.date).toISOString().slice(0, 10) : "");
-      setStats(JSON.stringify(result.stats || {}, null, 2));
+      setSport(baseSport);
+      setCustomSport(knownSport ? "" : result.sport || "");
+      setEvent(knownEvent ? result.event : CUSTOM_OPTION);
+      setCustomEvent(knownEvent ? "" : result.event || "");
+      setDate(
+        result.date ? new Date(result.date).toISOString().slice(0, 10) : "",
+      );
+      setStatRows(statsObjectToRows(result.stats || {}));
       setTags((result.tags || []).join(","));
       setNotes(result.notes || "");
     };
@@ -49,12 +130,17 @@ export default function App() {
   }, [params.id]);
 
   const handleSubmit = async () => {
-    let parsedStats;
+    if (!selectedSport || !selectedEvent) {
+      setToastError("Please select sport and event");
+      setToastOpen(true);
+      setTimeout(() => setToastOpen(false), 3000);
+      return;
+    }
 
-    try {
-      parsedStats = JSON.parse(stats);
-    } catch (_error) {
-      setToastError("Stats must be valid JSON (example: {\"time\": 11.2})");
+    const stats = rowsToStatsObject(statRows);
+
+    if (Object.keys(stats).length === 0) {
+      setToastError("Please add at least one stats field");
       setToastOpen(true);
       setTimeout(() => setToastOpen(false), 3000);
       return;
@@ -67,10 +153,10 @@ export default function App() {
       },
       body: JSON.stringify({
         athlete,
-        sport,
-        event,
+        sport: selectedSport,
+        event: selectedEvent,
         date,
-        stats: parsedStats,
+        stats,
         tags: tags
           .split(",")
           .map((tag) => tag.trim())
@@ -106,17 +192,68 @@ export default function App() {
           onChange={(e) => setAthlete(e.target.value)}
           value={athlete}
         />
-        <TextInput
-          label="Sport"
-          description="Examples: track, powerlifting, soccer"
-          onChange={(e) => setSport(e.target.value)}
-          value={sport}
-        />
+
+        <div className={selectGroupStyle}>
+          <label htmlFor="sport-select">Sport</label>
+          <p>Select a known sport or choose Custom</p>
+          <select
+            id="sport-select"
+            value={sport}
+            onChange={(e) => handleSportChange(e.target.value)}
+          >
+            <option value="">Select sport</option>
+            {sportOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+            <option value={CUSTOM_OPTION}>Custom sport</option>
+          </select>
+        </div>
+
+        {sport === CUSTOM_OPTION && (
+          <TextInput
+            label="Custom Sport"
+            description="Enter your sport name"
+            onChange={(e) => setCustomSport(e.target.value)}
+            value={customSport}
+          />
+        )}
+
+        {sport && sport !== CUSTOM_OPTION && (
+          <div className={selectGroupStyle}>
+            <label htmlFor="event-select">Event</label>
+            <p>Event options based on sport</p>
+            <select
+              id="event-select"
+              value={event}
+              onChange={(e) => setEventWithTemplate(e.target.value)}
+            >
+              <option value="">Select event</option>
+              {eventOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              <option value={CUSTOM_OPTION}>Custom event</option>
+            </select>
+          </div>
+        )}
+
+        {(sport === CUSTOM_OPTION || event === CUSTOM_OPTION) && (
+          <TextInput
+            label="Custom Event"
+            description="Enter your event name"
+            onChange={(e) => setCustomEvent(e.target.value)}
+            value={customEvent}
+          />
+        )}
+
         <TextInput
           label="Event"
-          description="Examples: 100m, squat, goals"
-          onChange={(e) => setEvent(e.target.value)}
-          value={event}
+          description="Selected event"
+          value={selectedEvent}
+          disabled
         />
         <TextInput
           type="date"
@@ -125,12 +262,17 @@ export default function App() {
           onChange={(e) => setDate(e.target.value)}
           value={date}
         />
-        <TextArea
-          label="Stats (JSON)"
-          description='Flexible stats object. Example: {"time": 11.2}'
-          onChange={(e) => setStats(e.target.value)}
-          rows="5"
-          value={stats}
+        <StatsFieldEditor
+          rows={statRows}
+          onRowChange={updateStatRow}
+          onAddRow={() =>
+            setStatRows((rows) => [...rows, { fieldName: "", value: "" }])
+          }
+          onRemoveRow={(index) =>
+            setStatRows((rows) =>
+              rows.filter((_, rowIndex) => rowIndex !== index),
+            )
+          }
         />
         <TextInput
           label="Tags"

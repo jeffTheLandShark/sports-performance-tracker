@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { H2, H3, Body } from "@leafygreen-ui/typography";
 import Icon from "@leafygreen-ui/icon";
 import Button from "@leafygreen-ui/button";
@@ -12,35 +12,54 @@ export default function App() {
 
   const deletePost = async () => {
     await fetch(`${baseUrl}/performances/${params.id}`, {
-      method: "DELETE"
+      method: "DELETE",
     });
     return navigate("/");
-  }
+  };
 
   useEffect(() => {
     const loadPost = async () => {
-      let results = await fetch(`${baseUrl}/performances/${params.id}`).then(resp => resp.json());
+      let results = await fetch(`${baseUrl}/performances/${params.id}`).then(
+        (resp) => resp.json(),
+      );
       setPost(results);
-    }
+    };
 
     loadPost();
-  }, []);
+  }, [params.id]);
 
   return (
     <React.Fragment>
       <H2>{post.event}</H2>
-      <H3>{post.sport} by {post.athlete}</H3>
-      <p>Date: {(new Date(post.date)).toLocaleDateString()}</p>
+      <H3>
+        {post.sport} by {post.athlete}
+      </H3>
+      <p>Date: {new Date(post.date).toLocaleDateString()}</p>
       <p>
-        <Body weight="medium">Tags:</Body> {(post.tags || []).join(", ") || "None"}
+        <Body weight="medium">Tags:</Body>{" "}
+        {(post.tags || []).join(", ") || "None"}
       </p>
       <Body weight="medium">Stats:</Body>
       <pre>{JSON.stringify(post.stats || {}, null, 2)}</pre>
       <Body weight="medium">Notes:</Body>
       <p>{post.notes || "No notes provided."}</p>
-      <Button variant="default" leftGlyph={<Icon glyph="Edit" />} onClick={() => navigate(`/edit/${params.id}`)}>Edit Performance</Button>&nbsp;&nbsp;
-      <Button variant="danger" leftGlyph={<Icon glyph="Trash" />} onClick={deletePost}>Delete Performance</Button>
-      <br/><br/>
+      <Button
+        variant="default"
+        leftGlyph={<Icon glyph="Edit" />}
+        onClick={() => navigate(`/edit/${params.id}`)}
+      >
+        Edit Performance
+      </Button>
+      &nbsp;&nbsp;
+      <Button
+        variant="danger"
+        leftGlyph={<Icon glyph="Trash" />}
+        onClick={deletePost}
+      >
+        Delete Performance
+      </Button>
+      <br />
+      <br />
     </React.Fragment>
-  )
+  );
 }
