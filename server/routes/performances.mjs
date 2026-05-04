@@ -10,7 +10,7 @@ const isValidDateValue = (value) => {
 };
 
 const normalizePayload = (payload = {}) => ({
-  athlete: payload.athlete?.trim() || "Brother",
+  athleteId: payload.athleteId,
   sport: payload.sport?.trim(),
   event: payload.event?.trim(),
   date: payload.date,
@@ -20,6 +20,14 @@ const normalizePayload = (payload = {}) => ({
 });
 
 const validateCreatePayload = (payload) => {
+  if (!payload.athleteId) {
+    return "athleteId is required";
+  }
+
+  if (!toObjectId(payload.athleteId)) {
+    return "athleteId must be a valid ObjectId";
+  }
+
   if (!payload.sport || !payload.event || !payload.date || !payload.stats) {
     return "sport, event, date, and stats are required";
   }
@@ -43,9 +51,9 @@ const toObjectId = (id) => {
   return new ObjectId(id);
 };
 
-// Get performances with optional sport/event filtering
+// Get performances with optional sport/event filtering and athlete population
 router.get("/", async (req, res) => {
-  const { sport, event } = req.query;
+  const { sport, event, athleteId } = req.query;
   const filter = {};
 
   if (sport) {
@@ -56,11 +64,29 @@ router.get("/", async (req, res) => {
     filter.event = event;
   }
 
+  if (athleteId) {
+    const parsedId = toObjectId(athleteId);
+    if (parsedId) {
+      filter.athleteId = parsedId;
+    }
+  }
+
   const collection = await db.collection("performances");
   const results = await collection
-    .find(filter)
-    .sort({ date: -1 })
-    .limit(50)
+    .aggregate([
+      { $match: filter },
+      {
+        $lookup: {
+          from: "athletes",
+          localField: "athleteId",
+          foreignField: "_id",
+          as: "athlete",
+        },
+      },
+      { $unwind: { path: "$athlete", preserveNullAndEmptyArrays: true } },
+      { $sort: { date: -1 } },
+      { $limit: 50 },
+    ])
     .toArray();
 
   res.status(200).send(results);
@@ -71,6 +97,15 @@ router.get("/latest", async (_req, res) => {
   const collection = await db.collection("performances");
   const results = await collection
     .aggregate([
+      {
+        $lookup: {
+          from: "athletes",
+          localField: "athleteId",
+          foreignField: "_id",
+          as: "athlete",
+        },
+      },
+      { $unwind: { path: "$athlete", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           athlete: 1,
@@ -115,6 +150,7 @@ router.post("/", async (req, res) => {
     return res.status(400).send({ error: validationError });
   }
 
+  newDocument.athleteId = toObjectId(newDocument.athleteId);
   newDocument.date = new Date(newDocument.date);
 
   const collection = await db.collection("performances");
@@ -145,9 +181,16 @@ router.patch("/:id", async (req, res) => {
     return res.status(400).send({ error: "stats must be a JSON object" });
   }
 
+  if (updatePayload.athleteId) {
+    const athleteObjectId = toObjectId(updatePayload.athleteId);
+    if (!athleteObjectId) {
+      return res.status(400).send({ error: "Invalid athleteId" });
+    }
+    updatePayload.athleteId = athleteObjectId;
+  }
+
   const updates = {
     $set: {
-      athlete: updatePayload.athlete,
       sport: updatePayload.sport,
       event: updatePayload.event,
       date: new Date(updatePayload.date),
@@ -156,6 +199,10 @@ router.patch("/:id", async (req, res) => {
       notes: updatePayload.notes,
     },
   };
+
+  if (updatePayload.athleteId) {
+    updates.$set.athleteId = updatePayload.athleteId;
+  }
 
   const collection = await db.collection("performances");
   const result = await collection.updateOne({ _id }, updates);
