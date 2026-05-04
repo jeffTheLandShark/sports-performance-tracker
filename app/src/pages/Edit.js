@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { H2 } from "@leafygreen-ui/typography";
-import TextInput from "@leafygreen-ui/text-input";
-import TextArea from "@leafygreen-ui/text-area";
-import FormFooter from "@leafygreen-ui/form-footer";
-import Toast from "@leafygreen-ui/toast";
-import { css } from "@leafygreen-ui/emotion";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Label } from "../components/ui/Label";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseUrl } from "../config";
 import StatsFieldEditor from "../components/StatsFieldEditor";
@@ -19,40 +22,6 @@ import {
   statsObjectToRows,
 } from "../performanceCatalog";
 
-const formStyle = css`
-  height: 100vh;
-  min-width: 767px;
-  margin: 10px;
-
-  input {
-    margin-bottom: 20px;
-  }
-`;
-
-const selectGroupStyle = css`
-  margin-bottom: 20px;
-
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 0 0 8px;
-    color: #5f6b7a;
-    font-size: 13px;
-  }
-
-  select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-    background: #fff;
-  }
-`;
-
 export default function App() {
   let [athlete, setAthlete] = useState("Brother");
   let [sport, setSport] = useState("");
@@ -63,7 +32,7 @@ export default function App() {
   let [statRows, setStatRows] = useState([]);
   let [tags, setTags] = useState("");
   let [notes, setNotes] = useState("");
-  let [toastOpen, setToastOpen] = useState(false);
+  let [toastMessage, setToastMessage] = useState("");
   let [toastError, setToastError] = useState("");
   const params = useParams();
   const navigate = useNavigate();
@@ -132,8 +101,7 @@ export default function App() {
   const handleSubmit = async () => {
     if (!selectedSport || !selectedEvent) {
       setToastError("Please select sport and event");
-      setToastOpen(true);
-      setTimeout(() => setToastOpen(false), 3000);
+      setTimeout(() => setToastError(""), 3000);
       return;
     }
 
@@ -141,8 +109,7 @@ export default function App() {
 
     if (Object.keys(stats).length === 0) {
       setToastError("Please add at least one stats field");
-      setToastOpen(true);
-      setTimeout(() => setToastOpen(false), 3000);
+      setTimeout(() => setToastError(""), 3000);
       return;
     }
 
@@ -168,140 +135,200 @@ export default function App() {
     if (!response.ok) {
       const result = await response.json();
       setToastError(result.error || "Unable to update performance");
-      setToastOpen(true);
-      setTimeout(() => setToastOpen(false), 3000);
+      setTimeout(() => setToastError(""), 3000);
       return;
     }
 
     setToastError("");
-
-    setToastOpen(true);
+    setToastMessage("Your performance entry was successfully updated.");
     setTimeout(() => {
-      setToastOpen(false);
+      setToastMessage("");
       navigate(`/performance/${params.id}`);
     }, 1000);
   };
 
   return (
-    <React.Fragment>
-      <H2>Edit Performance</H2>
-      <form className={formStyle}>
-        <TextInput
-          label="Athlete"
-          description="Name of the athlete"
-          onChange={(e) => setAthlete(e.target.value)}
-          value={athlete}
-        />
+    <div className="max-w-2xl mx-auto">
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-3xl">✏️ Edit Performance</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Athlete Input */}
+          <div>
+            <Label htmlFor="athlete-input">Athlete</Label>
+            <Input
+              id="athlete-input"
+              placeholder="Name of the athlete"
+              onChange={(e) => setAthlete(e.target.value)}
+              value={athlete}
+              className="mt-2"
+            />
+          </div>
 
-        <div className={selectGroupStyle}>
-          <label htmlFor="sport-select">Sport</label>
-          <p>Select a known sport or choose Custom</p>
-          <select
-            id="sport-select"
-            value={sport}
-            onChange={(e) => handleSportChange(e.target.value)}
-          >
-            <option value="">Select sport</option>
-            {sportOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-            <option value={CUSTOM_OPTION}>Custom sport</option>
-          </select>
-        </div>
-
-        {sport === CUSTOM_OPTION && (
-          <TextInput
-            label="Custom Sport"
-            description="Enter your sport name"
-            onChange={(e) => setCustomSport(e.target.value)}
-            value={customSport}
-          />
-        )}
-
-        {sport && sport !== CUSTOM_OPTION && (
-          <div className={selectGroupStyle}>
-            <label htmlFor="event-select">Event</label>
-            <p>Event options based on sport</p>
+          {/* Sport Select */}
+          <div>
+            <Label htmlFor="sport-select">Sport</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Select a known sport or choose Custom
+            </p>
             <select
-              id="event-select"
-              value={event}
-              onChange={(e) => setEventWithTemplate(e.target.value)}
+              id="sport-select"
+              value={sport}
+              onChange={(e) => handleSportChange(e.target.value)}
+              className="w-full px-3 py-2 border border-input rounded-md bg-input-background"
             >
-              <option value="">Select event</option>
-              {eventOptions.map((option) => (
+              <option value="">Select sport</option>
+              {sportOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-              <option value={CUSTOM_OPTION}>Custom event</option>
+              <option value={CUSTOM_OPTION}>Custom sport</option>
             </select>
           </div>
-        )}
 
-        {(sport === CUSTOM_OPTION || event === CUSTOM_OPTION) && (
-          <TextInput
-            label="Custom Event"
-            description="Enter your event name"
-            onChange={(e) => setCustomEvent(e.target.value)}
-            value={customEvent}
+          {/* Custom Sport Input */}
+          {sport === CUSTOM_OPTION && (
+            <div>
+              <Label htmlFor="custom-sport-input">Custom Sport</Label>
+              <Input
+                id="custom-sport-input"
+                placeholder="Enter your sport name"
+                onChange={(e) => setCustomSport(e.target.value)}
+                value={customSport}
+                className="mt-2"
+              />
+            </div>
+          )}
+
+          {/* Event Select */}
+          {sport && sport !== CUSTOM_OPTION && (
+            <div>
+              <Label htmlFor="event-select">Event</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Event options based on sport
+              </p>
+              <select
+                id="event-select"
+                value={event}
+                onChange={(e) => setEventWithTemplate(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-input-background"
+              >
+                <option value="">Select event</option>
+                {eventOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_OPTION}>Custom event</option>
+              </select>
+            </div>
+          )}
+
+          {/* Custom Event Input */}
+          {(sport === CUSTOM_OPTION || event === CUSTOM_OPTION) && (
+            <div>
+              <Label htmlFor="custom-event-input">Custom Event</Label>
+              <Input
+                id="custom-event-input"
+                placeholder="Enter your event name"
+                onChange={(e) => setCustomEvent(e.target.value)}
+                value={customEvent}
+                className="mt-2"
+              />
+            </div>
+          )}
+
+          {/* Selected Event Display */}
+          <div>
+            <Label htmlFor="selected-event-input">Selected Event</Label>
+            <Input
+              id="selected-event-input"
+              value={selectedEvent}
+              disabled
+              className="mt-2"
+            />
+          </div>
+
+          {/* Date Input */}
+          <div>
+            <Label htmlFor="date-input">Date</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Date the performance happened
+            </p>
+            <Input
+              id="date-input"
+              type="date"
+              onChange={(e) => setDate(e.target.value)}
+              value={date}
+              className="mt-2"
+            />
+          </div>
+
+          {/* Stats Field Editor */}
+          <StatsFieldEditor
+            rows={statRows}
+            onRowChange={updateStatRow}
+            onAddRow={() =>
+              setStatRows((rows) => [...rows, { fieldName: "", value: "" }])
+            }
+            onRemoveRow={(index) =>
+              setStatRows((rows) =>
+                rows.filter((_, rowIndex) => rowIndex !== index),
+              )
+            }
           />
-        )}
 
-        <TextInput
-          label="Event"
-          description="Selected event"
-          value={selectedEvent}
-          disabled
-        />
-        <TextInput
-          type="date"
-          label="Date"
-          description="Date the performance happened"
-          onChange={(e) => setDate(e.target.value)}
-          value={date}
-        />
-        <StatsFieldEditor
-          rows={statRows}
-          onRowChange={updateStatRow}
-          onAddRow={() =>
-            setStatRows((rows) => [...rows, { fieldName: "", value: "" }])
-          }
-          onRemoveRow={(index) =>
-            setStatRows((rows) =>
-              rows.filter((_, rowIndex) => rowIndex !== index),
-            )
-          }
-        />
-        <TextInput
-          label="Tags"
-          description="Optional tags, comma separated"
-          onChange={(e) => setTags(e.target.value)}
-          value={tags}
-        />
-        <TextArea
-          label="Notes"
-          description="Optional context about this result"
-          onChange={(e) => setNotes(e.target.value)}
-          rows="10"
-          value={notes}
-        />
-        <FormFooter
-          primaryButton={{
-            text: "Update Performance",
-            onClick: handleSubmit,
-          }}
-        />
-      </form>
+          {/* Tags Input */}
+          <div>
+            <Label htmlFor="tags-input">Tags</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Optional tags, comma separated
+            </p>
+            <Input
+              id="tags-input"
+              placeholder="tag1, tag2, tag3"
+              onChange={(e) => setTags(e.target.value)}
+              value={tags}
+              className="mt-2"
+            />
+          </div>
 
-      <Toast
-        variant={toastError ? "warning" : "success"}
-        title={toastError ? "Validation Error" : "Performance Updated"}
-        body={toastError || "Your performance entry was successfully updated."}
-        open={toastOpen}
-        close={() => setToastOpen(false)}
-      />
-    </React.Fragment>
+          {/* Notes Textarea */}
+          <div>
+            <Label htmlFor="notes-textarea">Notes</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Optional context about this result
+            </p>
+            <textarea
+              id="notes-textarea"
+              rows="6"
+              placeholder="Any additional notes..."
+              onChange={(e) => setNotes(e.target.value)}
+              value={notes}
+              className="w-full px-3 py-2 border border-input rounded-md bg-input-background font-mono text-sm"
+            />
+          </div>
+
+          {/* Update Button */}
+          <Button onClick={handleSubmit} className="w-full">
+            ✏️ Update Performance
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Toast Messages */}
+      {toastError && (
+        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded">
+          <strong>Validation Error:</strong> {toastError}
+        </div>
+      )}
+      {toastMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded">
+          <strong>Success:</strong> {toastMessage}
+        </div>
+      )}
+    </div>
   );
 }

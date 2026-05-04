@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { H2 } from "@leafygreen-ui/typography";
 import PostSummary from "../components/PostSummary";
 import { baseUrl } from "../config";
 
@@ -19,7 +18,7 @@ export default function App() {
 
   return (
     <React.Fragment>
-      <H2>Recent Performances</H2>
+      <h2 className="text-3xl font-bold mb-6">Recent Performances</h2>
       <div>
         {performances.map((post) => {
           return <PostSummary {...post} key={post._id} />;

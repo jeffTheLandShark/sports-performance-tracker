@@ -1,48 +1,5 @@
 import React from "react";
-import { css } from "@leafygreen-ui/emotion";
-import { Body } from "@leafygreen-ui/typography";
-
-const wrapperStyle = css`
-  margin: 16px 0;
-`;
-
-const headerStyle = css`
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 8px;
-  margin-bottom: 8px;
-`;
-
-const rowStyle = css`
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 8px;
-  margin-bottom: 8px;
-
-  input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-  }
-
-  button {
-    border: 1px solid #6b7280;
-    border-radius: 4px;
-    background: #ffffff;
-    padding: 8px 10px;
-    cursor: pointer;
-  }
-`;
-
-const addButtonStyle = css`
-  border: 1px solid #2d4f8f;
-  border-radius: 4px;
-  background: #f5f7ff;
-  color: #1f3d73;
-  padding: 8px 12px;
-  cursor: pointer;
-`;
+import { Button } from "./ui/Button";
 
 export default function StatsFieldEditor({
   rows,
@@ -51,37 +8,51 @@ export default function StatsFieldEditor({
   onRemoveRow,
 }) {
   return (
-    <div className={wrapperStyle}>
-      <Body weight="medium">Stats Fields</Body>
-      <div className={headerStyle}>
-        <Body weight="medium">Field</Body>
-        <Body weight="medium">Value</Body>
+    <div className="my-6">
+      <h3 className="font-semibold mb-4">Stats Fields</h3>
+
+      <div className="grid grid-cols-3 gap-2 mb-3 pb-3 border-b">
+        <div className="font-medium text-sm">Field</div>
+        <div className="font-medium text-sm">Value</div>
         <div />
       </div>
 
-      {rows.map((row, index) => (
-        <div key={`${row.fieldName}-${index}`} className={rowStyle}>
-          <input
-            type="text"
-            placeholder="field name"
-            value={row.fieldName}
-            onChange={(e) => onRowChange(index, "fieldName", e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="value"
-            value={row.value}
-            onChange={(e) => onRowChange(index, "value", e.target.value)}
-          />
-          <button type="button" onClick={() => onRemoveRow(index)}>
-            Remove
-          </button>
-        </div>
-      ))}
+      <div className="space-y-2 mb-4">
+        {rows.map((row, index) => (
+          <div
+            key={`${row.fieldName}-${index}`}
+            className="grid grid-cols-3 gap-2"
+          >
+            <input
+              type="text"
+              placeholder="field name"
+              value={row.fieldName}
+              onChange={(e) => onRowChange(index, "fieldName", e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-input-background text-sm"
+            />
+            <input
+              type="text"
+              placeholder="value"
+              value={row.value}
+              onChange={(e) => onRowChange(index, "value", e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-input-background text-sm"
+            />
+            <Button
+              type="button"
+              onClick={() => onRemoveRow(index)}
+              variant="destructive"
+              size="sm"
+              className="text-xs"
+            >
+              ✕ Remove
+            </Button>
+          </div>
+        ))}
+      </div>
 
-      <button type="button" className={addButtonStyle} onClick={onAddRow}>
-        Add Field
-      </button>
+      <Button type="button" onClick={onAddRow} className="w-full">
+        ➕ Add Field
+      </Button>
     </div>
   );
 }

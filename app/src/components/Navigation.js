@@ -1,35 +1,42 @@
-import { SideNav, SideNavItem } from "@leafygreen-ui/side-nav";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Navigation({ className }) {
   const location = useLocation();
 
+  const isActive = (path) =>
+    location.pathname === path
+      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+      : "text-sidebar-foreground hover:bg-sidebar-accent/50";
+
   return (
-    <SideNav aria-label="Navigation Bar" className={className}>
-      <SideNavItem
-        aria-label="Home"
-        as={Link}
-        active={location.pathname === "/"}
+    <nav className={`${className || ""} p-4 space-y-2`}>
+      <Link
         to="/"
+        className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${isActive(
+          "/",
+        )}`}
       >
-        Dashboard
-      </SideNavItem>
-      <SideNavItem
-        aria-label="Log Performance"
-        as={Link}
-        active={location.pathname === "/create"}
+        <span>📊</span>
+        <span>Dashboard</span>
+      </Link>
+      <Link
         to="/create"
+        className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${isActive(
+          "/create",
+        )}`}
       >
-        Log Performance
-      </SideNavItem>
-      <SideNavItem
-        aria-label="All Performances"
-        as={Link}
-        active={location.pathname === "/archive"}
+        <span>➕</span>
+        <span>Log Performance</span>
+      </Link>
+      <Link
         to="/archive"
+        className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${isActive(
+          "/archive",
+        )}`}
       >
-        All Performances
-      </SideNavItem>
-    </SideNav>
+        <span>📁</span>
+        <span>All Performances</span>
+      </Link>
+    </nav>
   );
 }
