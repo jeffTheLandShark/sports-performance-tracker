@@ -19,93 +19,144 @@ const formStyle = css`
 `;
 
 export default function App() {
-  let [author, setAuthor] = useState("");
-  let [title, setTitle] = useState("");
+  let [athlete, setAthlete] = useState("Brother");
+  let [sport, setSport] = useState("");
+  let [event, setEvent] = useState("");
+  let [date, setDate] = useState("");
+  let [stats, setStats] = useState('{"time": 11.2}');
   let [tags, setTags] = useState("");
-  let [body, setBody] = useState("");
+  let [notes, setNotes] = useState("");
   let [toastOpen, setToastOpen] = useState(false);
+  let [toastError, setToastError] = useState("");
   const params = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadPost = async () => {
-      const result = await fetch(`${baseUrl}/posts/${params.id}`).then((resp) =>
+      const result = await fetch(`${baseUrl}/performances/${params.id}`).then((resp) =>
         resp.json(),
       );
-      setAuthor(result.author || "");
-      setTitle(result.title || "");
+      setAthlete(result.athlete || "Brother");
+      setSport(result.sport || "");
+      setEvent(result.event || "");
+      setDate(result.date ? new Date(result.date).toISOString().slice(0, 10) : "");
+      setStats(JSON.stringify(result.stats || {}, null, 2));
       setTags((result.tags || []).join(","));
-      setBody(result.body || "");
+      setNotes(result.notes || "");
     };
 
     loadPost();
   }, [params.id]);
 
   const handleSubmit = async () => {
-    await fetch(`${baseUrl}/posts/${params.id}`, {
+    let parsedStats;
+
+    try {
+      parsedStats = JSON.parse(stats);
+    } catch (_error) {
+      setToastError("Stats must be valid JSON (example: {\"time\": 11.2})");
+      setToastOpen(true);
+      setTimeout(() => setToastOpen(false), 3000);
+      return;
+    }
+
+    const response = await fetch(`${baseUrl}/performances/${params.id}`, {
       method: "PATCH",
       headers: {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        author,
-        title,
+        athlete,
+        sport,
+        event,
+        date,
+        stats: parsedStats,
         tags: tags
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
-        body,
+        notes,
       }),
     });
+
+    if (!response.ok) {
+      const result = await response.json();
+      setToastError(result.error || "Unable to update performance");
+      setToastOpen(true);
+      setTimeout(() => setToastOpen(false), 3000);
+      return;
+    }
+
+    setToastError("");
 
     setToastOpen(true);
     setTimeout(() => {
       setToastOpen(false);
-      navigate(`/post/${params.id}`);
+      navigate(`/performance/${params.id}`);
     }, 1000);
   };
 
   return (
     <React.Fragment>
-      <H2>Edit Post</H2>
+      <H2>Edit Performance</H2>
       <form className={formStyle}>
         <TextInput
-          label="Author"
-          description="Enter your name"
-          onChange={(e) => setAuthor(e.target.value)}
-          value={author}
+          label="Athlete"
+          description="Name of the athlete"
+          onChange={(e) => setAthlete(e.target.value)}
+          value={athlete}
         />
         <TextInput
-          label="Title"
-          description="Enter the title for this blog post"
-          onChange={(e) => setTitle(e.target.value)}
-          value={title}
+          label="Sport"
+          description="Examples: track, powerlifting, soccer"
+          onChange={(e) => setSport(e.target.value)}
+          value={sport}
+        />
+        <TextInput
+          label="Event"
+          description="Examples: 100m, squat, goals"
+          onChange={(e) => setEvent(e.target.value)}
+          value={event}
+        />
+        <TextInput
+          type="date"
+          label="Date"
+          description="Date the performance happened"
+          onChange={(e) => setDate(e.target.value)}
+          value={date}
+        />
+        <TextArea
+          label="Stats (JSON)"
+          description='Flexible stats object. Example: {"time": 11.2}'
+          onChange={(e) => setStats(e.target.value)}
+          rows="5"
+          value={stats}
         />
         <TextInput
           label="Tags"
-          description="Enter tags for the post, comma separated if multiple"
+          description="Optional tags, comma separated"
           onChange={(e) => setTags(e.target.value)}
           value={tags}
         />
         <TextArea
-          label="Post body"
-          description="Write your article. Be creative and have fun!"
-          onChange={(e) => setBody(e.target.value)}
+          label="Notes"
+          description="Optional context about this result"
+          onChange={(e) => setNotes(e.target.value)}
           rows="10"
-          value={body}
+          value={notes}
         />
         <FormFooter
           primaryButton={{
-            text: "Update Blog Post",
+            text: "Update Performance",
             onClick: handleSubmit,
           }}
         />
       </form>
 
       <Toast
-        variant="success"
-        title="Post Updated"
-        body="Your blog post was successfully updated."
+        variant={toastError ? "warning" : "success"}
+        title={toastError ? "Validation Error" : "Performance Updated"}
+        body={toastError || "Your performance entry was successfully updated."}
         open={toastOpen}
         close={() => setToastOpen(false)}
       />

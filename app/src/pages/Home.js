@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { H2 } from "@leafygreen-ui/typography";
 import PostSummary from "../components/PostSummary";
 import { baseUrl } from "../config";
@@ -8,9 +8,11 @@ export default function App() {
 
   useEffect(() => {
     const loadPerformances = async () => {
-      let results = await fetch(`${baseUrl}/performances/latest`).then(resp => resp.json());
+      let results = await fetch(`${baseUrl}/performances/latest`).then((resp) =>
+        resp.json(),
+      );
       setPerformances(results);
-    }
+    };
 
     loadPerformances();
   }, []);
@@ -19,12 +21,10 @@ export default function App() {
     <React.Fragment>
       <H2>Recent Performances</H2>
       <div>
-        {performances.map(post => {
-          return(
-            <PostSummary {...post} key={post._id} />
-          )
+        {performances.map((post) => {
+          return <PostSummary {...post} key={post._id} />;
         })}
       </div>
     </React.Fragment>
-  )
+  );
 }
