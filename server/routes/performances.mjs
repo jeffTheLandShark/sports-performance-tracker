@@ -9,8 +9,12 @@ const isValidDateValue = (value) => {
   return !Number.isNaN(parsed.getTime());
 };
 
+const escapeRegex = (value = "") =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const normalizePayload = (payload = {}) => ({
   athleteId: payload.athleteId,
+  athlete: payload.athlete?.trim(),
   sport: payload.sport?.trim(),
   event: payload.event?.trim(),
   date: payload.date,
@@ -20,11 +24,11 @@ const normalizePayload = (payload = {}) => ({
 });
 
 const validateCreatePayload = (payload) => {
-  if (!payload.athleteId) {
-    return "athleteId is required";
+  if (!payload.athleteId && !payload.athlete) {
+    return "athleteId or athlete is required";
   }
 
-  if (!toObjectId(payload.athleteId)) {
+  if (payload.athleteId && !toObjectId(payload.athleteId)) {
     return "athleteId must be a valid ObjectId";
   }
 
@@ -150,7 +154,31 @@ router.post("/", async (req, res) => {
     return res.status(400).send({ error: validationError });
   }
 
-  newDocument.athleteId = toObjectId(newDocument.athleteId);
+  if (newDocument.athleteId) {
+    newDocument.athleteId = toObjectId(newDocument.athleteId);
+  } else {
+    const athletesCollection = await db.collection("athletes");
+    const athleteName = newDocument.athlete;
+
+    let athlete = await athletesCollection.findOne({
+      name: { $regex: `^${escapeRegex(athleteName)}$`, $options: "i" },
+    });
+
+    if (!athlete) {
+      const insertAthleteResult = await athletesCollection.insertOne({
+        name: athleteName,
+        sport: newDocument.sport,
+        bio: "",
+        photoUrl: "",
+        createdAt: new Date(),
+      });
+      newDocument.athleteId = insertAthleteResult.insertedId;
+    } else {
+      newDocument.athleteId = athlete._id;
+    }
+  }
+
+  delete newDocument.athlete;
   newDocument.date = new Date(newDocument.date);
 
   const collection = await db.collection("performances");
