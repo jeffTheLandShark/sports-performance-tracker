@@ -77,7 +77,7 @@ export default function App() {
               Sports Stats Tracker
             </h1>
             <p className="text-slate-600">
-              Track your athletic progress and personal bests
+              Track your athletic progress and top scores
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default function App() {
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="dashboard">
               <Trophy className="w-4 h-4" />
-              Personal Bests
+              Top Scores
             </TabsTrigger>
 
             <TabsTrigger value="log">
