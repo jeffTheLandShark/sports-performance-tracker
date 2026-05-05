@@ -63,13 +63,14 @@ export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
           <CardContent className="grid gap-3 md:grid-cols-3">
             {entries.map((p) => (
               <div key={p._id} className="p-4 rounded-lg border bg-slate-50">
-                <div className="text-sm text-slate-500">{p.event}</div>
+                <CardTitle className="text-sm text-slate-500">
+                  {p.event}
+                  {" | "}
+                  {Object.keys(p.stats || {})[0]}
+                </CardTitle>
 
                 <div className="text-2xl font-semibold">
                   {Object.values(p.stats || {})[0]}{" "}
-                  <Badge className="ml-2">
-                    {Object.keys(p.stats || {})[0]}
-                  </Badge>
                 </div>
 
                 <div className="text-xs text-slate-500 flex items-center gap-1">
@@ -80,7 +81,8 @@ export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
                 <div className="text-xs text-slate-600 flex items-center gap-1 mt-1">
                   <User className="w-3 h-3" />
                   {p.athleteId
-                    ? p.athlete?.name || p.team?.name || "" : p.team?.name || ""}
+                    ? p.athlete?.name || p.team?.name || ""
+                    : p.team?.name || ""}
                 </div>
               </div>
             ))}

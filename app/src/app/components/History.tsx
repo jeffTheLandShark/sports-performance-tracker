@@ -47,7 +47,7 @@ export function History({ stats, viewId, onRefresh }: Props) {
             <div className="flex items-center justify-between">
               <CardTitle>
                 {p.sport}
-                {" -- "}
+                {" | "}
                 {p.event}
               </CardTitle>
 
