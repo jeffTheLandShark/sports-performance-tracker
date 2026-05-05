@@ -45,7 +45,7 @@ export function History({ stats, viewId, onRefresh }: Props) {
         <Card key={p._id} className="relative">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>
+              <CardTitle className="text-med font-medium">
                 {p.sport}
                 {" | "}
                 {p.event}
@@ -85,6 +85,12 @@ export function History({ stats, viewId, onRefresh }: Props) {
                 ? p.athlete?.name || p.team?.name || ""
                 : p.team?.name || ""}
             </Badge>
+
+            {p.notes && (
+              <div className="mt-2 p-2 bg-slate-50 rounded text-sm text-slate-700">
+                {p.notes}
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}

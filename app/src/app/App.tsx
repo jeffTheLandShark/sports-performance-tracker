@@ -138,6 +138,7 @@ export default function App() {
 
           <TabsContent value="history">
             <History
+              onRefresh={loadAll}
               stats={stats}
               viewMode={viewMode}
               viewId={selectedAthlete || selectedTeam || ""}
