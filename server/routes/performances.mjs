@@ -239,4 +239,32 @@ router.delete("/:id", async (req, res) => {
   res.status(200).send(result);
 });
 
+// -------------------------
+// GET TOP PERFORMANCES
+// -------------------------
+router.get("/top", async (req, res) => {
+  const { sport, event, limit = 10 } = req.query;
+
+  const results = await db
+    .collection("performances")
+    .aggregate([
+      { $match: { sport, event } },
+
+      {
+        $addFields: {
+          primaryStat: { $first: { $objectToArray: "$stats" } },
+        },
+      },
+
+      {
+        $sort: { "primaryStat.v": -1 },
+      },
+
+      { $limit: parseInt(limit) },
+    ])
+    .toArray();
+
+  res.json(results);
+});
+
 export default router;

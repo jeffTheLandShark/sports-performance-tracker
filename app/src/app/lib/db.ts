@@ -70,9 +70,7 @@ export async function getAthletes(): Promise<Athlete[]> {
   return res.json();
 }
 
-export async function newAthlete(
-  athlete: Omit<Athlete, "_id">
-) {
+export async function newAthlete(athlete: Omit<Athlete, "_id">) {
   const res = await fetch(`${API}/athletes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -93,9 +91,7 @@ export async function getTeams(): Promise<Team[]> {
   return res.json();
 }
 
-export async function newTeam(
-  team: Omit<Team, "_id">
-) {
+export async function newTeam(team: Omit<Team, "_id">) {
   const res = await fetch(`${API}/teams`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -110,18 +106,12 @@ export async function newTeam(
   return res.json();
 }
 
-export async function addTeammate(
-  teamId: string,
-  athleteId: string
-) {
-  const res = await fetch(
-    `${API}/teams/${teamId}/add`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ athleteId }),
-    }
-  );
+export async function addTeammate(teamId: string, athleteId: string) {
+  const res = await fetch(`${API}/teams/${teamId}/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ athleteId }),
+  });
 
   if (!res.ok) {
     const err = await res.json();
@@ -143,9 +133,7 @@ export async function getPerformances(): Promise<Performance[]> {
   return res.json();
 }
 
-export async function addPerformance(
-  performance: Omit<Performance, "_id">
-) {
+export async function addPerformance(performance: Omit<Performance, "_id">) {
   const res = await fetch(`${API}/performances`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -161,15 +149,11 @@ export async function addPerformance(
 }
 
 /* TOP STATS */
-export async function topStats(
-  sport: string,
-  event: string,
-  limit = 10
-) {
+export async function topStats(sport: string, event: string, limit = 10) {
   const res = await fetch(
     `${API}/performances/top?sport=${encodeURIComponent(
-      sport
-    )}&event=${encodeURIComponent(event)}&limit=${limit}`
+      sport,
+    )}&event=${encodeURIComponent(event)}&limit=${limit}`,
   );
 
   if (!res.ok) {
@@ -186,6 +170,19 @@ export async function getDatabase() {
 
   if (!res.ok) {
     throw new Error("Failed to connect to database");
+  }
+
+  return res.json();
+}
+
+export async function deletePerformance(id: string) {
+  const res = await fetch(`http://localhost:5050/performances/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Failed to delete performance");
   }
 
   return res.json();
