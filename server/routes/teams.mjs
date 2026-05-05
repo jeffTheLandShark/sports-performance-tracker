@@ -10,99 +10,116 @@ const toObjectId = (id) => {
 };
 
 // -------------------------
-// GET ALL ATHLETES
+// GET ALL TEAMS
 // -------------------------
 router.get("/", async (req, res) => {
-  const collection = db.collection("athletes");
+  const collection = db.collection("teams");
   const results = await collection.find({}).toArray();
   res.status(200).send(results);
 });
 
 // -------------------------
-// GET ONE ATHLETE
+// GET ONE TEAM
 // -------------------------
 router.get("/:id", async (req, res) => {
   const _id = toObjectId(req.params.id);
 
   if (!_id) {
-    return res.status(400).send({ error: "Invalid athlete id" });
+    return res.status(400).send({ error: "Invalid team id" });
   }
 
-  const collection = db.collection("athletes");
+  const collection = db.collection("teams");
   const result = await collection.findOne({ _id });
 
   if (!result) {
-    return res.status(404).send({ error: "Athlete not found" });
+    return res.status(404).send({ error: "Team not found" });
   }
 
   return res.status(200).send(result);
 });
 
 // -------------------------
-// CREATE ATHLETE (NEW SCHEMA)
+// CREATE TEAM (NEW SCHEMA)
 // -------------------------
 router.post("/", async (req, res) => {
-  const { name, birthdate } = req.body;
+  const { name, sportId } = req.body;
 
-  if (!name || !birthdate) {
+  if (!name || !sportId) {
     return res.status(400).send({
-      error: "name and birthdate are required",
+      error: "name and sportId are required",
     });
   }
 
-  const newAthlete = {
+  const newTeam = {
     name: name.trim(),
-    birthdate: new Date(birthdate), // normalize to Date
+    sportId: sportId,
     createdAt: new Date(),
   };
 
-  const collection = db.collection("athletes");
-  const result = await collection.insertOne(newAthlete);
+  const collection = db.collection("teams");
+  const result = await collection.insertOne(newTeam);
 
   return res.status(201).send({
     _id: result.insertedId,
-    ...newAthlete,
+    ...newTeam,
   });
 });
 
 // -------------------------
-// UPDATE ATHLETE
+// UPDATE TEAM
 // -------------------------
 router.patch("/:id", async (req, res) => {
   const _id = toObjectId(req.params.id);
 
   if (!_id) {
-    return res.status(400).send({ error: "Invalid athlete id" });
+    return res.status(400).send({ error: "Invalid team id" });
   }
 
-  const { name, birthdate } = req.body;
+  const { name, sportId } = req.body;
 
   const updates = {};
 
   if (name) updates.name = name.trim();
-  if (birthdate) updates.birthdate = new Date(birthdate);
+  if (sportId) updates.sportId = sportId;
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).send({ error: "No fields to update" });
   }
 
-  const collection = db.collection("athletes");
+  const collection = db.collection("teams");
   const result = await collection.updateOne({ _id }, { $set: updates });
 
   return res.status(200).send(result);
 });
 
 // -------------------------
-// DELETE ATHLETE
+// UPDATE TEAM ROSTER
+// -------------------------
+router.patch("/:id/roster", async (req, res) => {
+  const _id = toObjectId(req.params.id);
+  const { playerIds } = req.body;
+
+  if (!playerIds) {
+    return res.status(400).send({ error: "playerIds are required" });
+  }
+
+  const collection = db.collection("teams");
+  const result = await collection.updateOne({ _id }, { $set: { playerIds } });
+
+  return res.status(200).send(result);
+});
+
+// -------------------------
+// DELETE TEAM
 // -------------------------
 router.delete("/:id", async (req, res) => {
   const _id = toObjectId(req.params.id);
 
   if (!_id) {
-    return res.status(400).send({ error: "Invalid athlete id" });
+    return res.status(400).send({ error: "Invalid team id" });
   }
 
-  const collection = db.collection("athletes");
+  const collection = db.collection("teams");
   const result = await collection.deleteOne({ _id });
 
   return res.status(200).send(result);

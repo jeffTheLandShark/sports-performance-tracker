@@ -4,7 +4,8 @@ import "./loadEnvironment.mjs";
 import "express-async-errors";
 import performances from "./routes/performances.mjs";
 import athletes from "./routes/athletes.mjs";
-import achievements from "./routes/achievements.mjs";
+import sports from "./routes/sports.mjs";
+import teams from "./routes/teams.mjs";
 
 const PORT = process.env.PORT || 5050;
 const app = express();
@@ -15,7 +16,9 @@ app.use(express.json());
 // Load the routes
 app.use("/performances", performances);
 app.use("/athletes", athletes);
-app.use("/achievements", achievements);
+app.use("/teams", teams);
+app.use("/sports", sports);
+
 
 // Global error handling
 app.use((err, _req, res, next) => {
