@@ -55,13 +55,9 @@ export function LogStats({
   const [sport, setSport] = useState("");
   const [event, setEvent] = useState("");
 
-  const [metricValues, setMetricValues] = useState<Record<string, string>>(
-    {}
-  );
+  const [metricValues, setMetricValues] = useState<Record<string, string>>({});
 
-  const [date, setDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
 
   // -------------------------
@@ -69,7 +65,7 @@ export function LogStats({
   // -------------------------
   const selectedSport = useMemo(
     () => sports.find((s) => s.name === sport),
-    [sport, sports]
+    [sport, sports],
   );
 
   const events = selectedSport?.events || [];
@@ -162,14 +158,10 @@ export function LogStats({
     <Card>
       <CardHeader>
         <CardTitle>Log Performance</CardTitle>
-        <CardDescription>
-          Athlete/Team → Sport → Event → Metrics
-        </CardDescription>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* ENTITY TYPE */}
           <div className="space-y-2">
             <Label>Type</Label>
@@ -255,11 +247,7 @@ export function LogStats({
           {/* EVENT */}
           <div className="space-y-2">
             <Label>Event</Label>
-            <Select
-              value={event}
-              onValueChange={setEvent}
-              disabled={!sport}
-            >
+            <Select value={event} onValueChange={setEvent} disabled={!sport}>
               <SelectTrigger>
                 <SelectValue placeholder="Select event" />
               </SelectTrigger>

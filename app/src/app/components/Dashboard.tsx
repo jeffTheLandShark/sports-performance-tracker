@@ -1,92 +1,88 @@
+import { Performance } from "../lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { TrendingUp, Calendar } from "lucide-react";
-import { Performance } from "../lib/db";
+import { TrendingUp, Calendar, User } from "lucide-react";
 
-interface Props {
+interface DashboardProps {
   stats: Performance[];
-  viewMode: "all" | "athlete" | "team";
-  selectedAthlete: string | null;
-  selectedTeam: string | null;
+  viewId?: string; // athleteId or teamId
 }
 
-const formatKey = (k: string) =>
-  k.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
-
-export function Dashboard({
-  stats,
-  viewMode,
-  selectedAthlete,
-  selectedTeam,
-}: Props) {
-  const filtered = stats.filter((s) => {
-    if (viewMode === "athlete") return s.athleteId === selectedAthlete;
-    if (viewMode === "team") return s.teamId === selectedTeam;
-    return true;
-  });
-
-  const getPrimaryMetric = (s: Performance) => Object.entries(s.stats || {})[0];
+export function Dashboard({ stats, viewId }: DashboardProps) {
+  const filtered = stats.filter((s) =>
+    viewId ? s.athleteId === viewId || s.teamId === viewId : true,
+  );
 
   const getPersonalBests = () => {
-    const map = new Map<string, Performance>();
+    const bests = new Map<string, Performance>();
 
-    filtered.forEach((stat) => {
+    for (const stat of filtered) {
       const key = `${stat.sport}-${stat.event}`;
-      const current = getPrimaryMetric(stat);
-      if (!current) return;
-
-      const [, val] = current;
-      const existing = map.get(key);
+      const existing = bests.get(key);
 
       if (!existing) {
-        map.set(key, stat);
-        return;
+        bests.set(key, stat);
+        continue;
       }
 
-      const existingVal = getPrimaryMetric(existing)?.[1] ?? -Infinity;
+      const isBetter = stat.event.toLowerCase().includes("time")
+        ? stat.stats?.value < existing.stats?.value
+        : stat.stats?.value > existing.stats?.value;
 
-      if (val > existingVal) map.set(key, stat);
-    });
+      if (isBetter) bests.set(key, stat);
+    }
 
-    return Array.from(map.values());
+    return Array.from(bests.values());
   };
 
-  const bests = getPersonalBests();
+  const personalBests = getPersonalBests();
+
+  const grouped = personalBests.reduce(
+    (acc, stat) => {
+      acc[stat.sport] = acc[stat.sport] || [];
+      acc[stat.sport].push(stat);
+      return acc;
+    },
+    {} as Record<string, Performance[]>,
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between">
-        <h2 className="text-xl">Personal Bests</h2>
-        <Badge>{bests.length}</Badge>
-      </div>
+      {Object.entries(grouped).map(([sport, entries]) => (
+        <Card key={sport}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              {sport}
+            </CardTitle>
+          </CardHeader>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        {bests.map((stat) => (
-          <Card key={stat._id}>
-            <CardHeader>
-              <CardTitle>{stat.event}</CardTitle>
-            </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-3">
+            {entries.map((p) => (
+              <div key={p._id} className="p-4 rounded-lg border bg-slate-50">
+                <div className="text-sm text-slate-500">{p.event}</div>
 
-            <CardContent>
-              <div className="text-sm text-slate-500 mb-2">{stat.sport}</div>
+                <div className="text-2xl font-semibold">
+                  {Object.values(p.stats || {})[0]}{" "}
+                  <Badge className="ml-2">
+                    {Object.keys(p.stats || {})[0]}
+                  </Badge>
+                </div>
 
-              <div className="space-y-1">
-                {Object.entries(stat.stats || {}).map(([k, v]) => (
-                  <div key={k} className="flex justify-between">
-                    <span>{formatKey(k)}</span>
-                    <span className="font-medium">{v}</span>
-                  </div>
-                ))}
+                <div className="text-xs text-slate-500 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {new Date(p.date).toLocaleDateString()}
+                </div>
+
+                <div className="text-xs text-slate-600 flex items-center gap-1 mt-1">
+                  <User className="w-3 h-3" />
+                  {p.athleteId ? p.athlete.name : p.team.name}
+                </div>
               </div>
-
-              <div className="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {new Date(stat.date).toLocaleDateString()}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
