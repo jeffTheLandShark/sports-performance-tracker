@@ -74,7 +74,12 @@ export function LogStats({
     return selectedSport?.events.find((e) => e.name === event);
   }, [event, selectedSport]);
 
-  const metrics = selectedEvent?.metrics || [];
+  // const metrics = selectedEvent?.metrics
+  // filter for the type of entry (team vs athlete)
+  const metrics =
+    selectedEvent?.metrics.filter((m) => {
+      return m.teamMetric === (entityType === "team");
+    }) || [];
 
   useEffect(() => {
     setMetricValues({});
