@@ -123,8 +123,7 @@ export default function App() {
             <Dashboard
               stats={stats}
               viewMode={viewMode}
-              selectedAthlete={selectedAthlete}
-              selectedTeam={selectedTeam}
+              viewId={selectedAthlete || selectedTeam || ""}
             />
           </TabsContent>
 
@@ -141,8 +140,7 @@ export default function App() {
             <History
               stats={stats}
               viewMode={viewMode}
-              selectedAthlete={selectedAthlete}
-              selectedTeam={selectedTeam}
+              viewId={selectedAthlete || selectedTeam || ""}
             />
           </TabsContent>
         </Tabs>
