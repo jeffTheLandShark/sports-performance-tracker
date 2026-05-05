@@ -2,3 +2,9 @@ node_modules
 yarn.lock
 config.env
 .env
+
+*.env
+
+# vite
+dist
+build
