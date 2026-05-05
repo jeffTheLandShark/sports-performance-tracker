@@ -5,10 +5,11 @@ import { TrendingUp, Calendar, User } from "lucide-react";
 
 interface DashboardProps {
   stats: Performance[];
+  viewMode?: "all" | "athlete" | "team";
   viewId?: string; // athleteId or teamId
 }
 
-export function Dashboard({ stats, viewId }: DashboardProps) {
+export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
   const filtered = stats.filter((s) =>
     viewId ? s.athleteId === viewId || s.teamId === viewId : true,
   );
@@ -40,7 +41,9 @@ export function Dashboard({ stats, viewId }: DashboardProps) {
   const grouped = personalBests.reduce(
     (acc, stat) => {
       acc[stat.sport] = acc[stat.sport] || [];
-      acc[stat.sport].push(stat);
+      if (stat.athleteId === viewId || stat.teamId === viewId || !viewId) {
+        acc[stat.sport].push(stat);
+      }
       return acc;
     },
     {} as Record<string, Performance[]>,
