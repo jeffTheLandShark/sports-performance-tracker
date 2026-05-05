@@ -76,7 +76,8 @@ export function Dashboard({ stats, viewId }: DashboardProps) {
 
                 <div className="text-xs text-slate-600 flex items-center gap-1 mt-1">
                   <User className="w-3 h-3" />
-                  {p.athleteId ? p.athlete.name : p.team.name}
+                  {p.athleteId
+                    ? p.athlete?.name || p.team?.name || "" : p.team?.name || ""}
                 </div>
               </div>
             ))}

@@ -37,7 +37,11 @@ export function History({ stats, viewId }: Props) {
               {new Date(s.date).toLocaleDateString()}
             </div>
 
-            <Badge variant="outline">{s.athleteId ? s.athlete.name : s.team.name}</Badge>
+            <Badge variant="outline">
+              {s.athleteId
+                ? s.athlete?.name || s.team?.name || ""
+                : s.team?.name || ""}
+            </Badge>
           </CardContent>
         </Card>
       ))}
