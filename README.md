@@ -6,26 +6,34 @@ This project is a NoSQL-based web application for tracking personal bests and sp
 ## Features
 - Add new performance entries
 - View past results
-- Filter by sport and event
-- Track personal bests across different categories
+- Track leaderboard across different categories
 
-## Tech Stack
-- Node.js
-- Express
-- MongoDB (Mongoose)
+## Setup Instructions
 
-## Data Model
-
-Each performance is stored as a document:
-
-```json
-{
-  "sport": "track",
-  "event": "100m",
-  "date": "2026-03-20",
-  "stats": { "time": 11.2 },
-  "notes": "Good run"
-}
-```
-
-The `stats` field is flexible and varies depending on the sport.
+The project has two main components: a backend server and a frontend client. 
+### Backend Setup
+1. Navigate to the `server` directory:
+   ```bash
+   cd server
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the backend server:
+   ```bash
+   npm run dev
+   ```
+### Frontend Setup
+1. Navigate to the `app` directory:
+   ```bash
+   cd app
+   ```
+2. Install dependencies:
+   ```bash
+    pnpm install
+    ```
+3. Start the frontend development server:
+   ```bash
+   pnpm exec vite
+   ```
