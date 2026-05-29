@@ -18,7 +18,7 @@ export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
     const bests = new Map<string, Performance>();
 
     for (const stat of filtered) {
-      const key = `${stat.sport}-${stat.event}`;
+      const key = `${stat.sport}-${stat.event}-${stat.teamEntry}`;
       const existing = bests.get(key);
 
       if (!existing) {
@@ -62,8 +62,11 @@ export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
 
           <CardContent className="grid gap-3 md:grid-cols-3">
             {entries.map((p) => (
-              <div key={p._id} className="p-4 rounded-lg border bg-slate-50">
-                <CardTitle className="text-sm text-slate-500">
+              <div
+                key={p._id}
+                className="p-3 rounded-lg border bg-slate-50 items-start"
+              >
+                <CardTitle className="text-med text-slate-500">
                   {p.event}
                   {" | "}
                   {Object.keys(p.stats || {})[0]}
@@ -73,16 +76,16 @@ export function Dashboard({ stats, viewMode, viewId }: DashboardProps) {
                   {Object.values(p.stats || {})[0]}{" "}
                 </div>
 
-                <div className="text-xs text-slate-500 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {new Date(p.date).toLocaleDateString()}
-                </div>
-
-                <div className="text-xs text-slate-600 flex items-center gap-1 mt-1">
+                <div className="text-sm text-slate-600 flex items-center gap-1 mt-1">
                   <User className="w-3 h-3" />
                   {p.athleteId
                     ? p.athlete?.name || p.team?.name || ""
                     : p.team?.name || ""}
+                </div>
+
+                <div className="text-sm text-slate-500 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {new Date(p.date).toLocaleDateString()}
                 </div>
               </div>
             ))}

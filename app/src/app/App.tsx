@@ -74,21 +74,20 @@ export default function App() {
         <header className="mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-4xl mb-2 text-slate-900">
-              Sports Stats Tracker
+              Mom's Sports Tracker
             </h1>
-            <p className="text-slate-600">
-              Track your athletic progress and top scores
-            </p>
           </div>
 
-          <Button variant="outline" onClick={loadAll}>
-            Refresh
-          </Button>
+          <div className="flex space-x-5">
+            <Button variant="outline" onClick={loadAll}>
+              Refresh
+            </Button>
 
-          <Button onClick={() => setOpenCreate(true)}>
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Add
-          </Button>
+            <Button onClick={() => setOpenCreate(true)}>
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Add
+            </Button>
+          </div>
         </header>
 
         {/* CREATE MODAL */}

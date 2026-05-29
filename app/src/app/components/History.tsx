@@ -43,12 +43,21 @@ export function History({ stats, viewId, onRefresh }: Props) {
     <div className="space-y-3">
       {sorted.map((p) => (
         <Card key={p._id} className="relative">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-med font-medium">
-                {p.sport}
-                {" | "}
-                {p.event}
+          <CardHeader  className="flex items-top justify-between">
+              <CardTitle className="text-lg font-medium">
+                  {p.sport}
+                  {" | "}
+                  {p.event}
+                  {" "}
+                  {" "}
+                  <div></div>
+
+                <Badge variant="outline" className="text-med">
+                  <User className="w-3 h-3" />
+                  {p.athleteId
+                    ? p.athlete?.name || p.team?.name || ""
+                    : p.team?.name || ""}
+                </Badge>
               </CardTitle>
 
               <button
@@ -58,7 +67,6 @@ export function History({ stats, viewId, onRefresh }: Props) {
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-            </div>
           </CardHeader>
 
           <CardContent>
@@ -78,13 +86,6 @@ export function History({ stats, viewId, onRefresh }: Props) {
               <Calendar className="w-3 h-3" />
               {new Date(p.date).toLocaleDateString()}
             </div>
-
-            <Badge variant="outline" className="mt-2">
-              <User className="w-3 h-3" />
-              {p.athleteId
-                ? p.athlete?.name || p.team?.name || ""
-                : p.team?.name || ""}
-            </Badge>
 
             {p.notes && (
               <div className="mt-2 p-2 bg-slate-50 rounded text-sm text-slate-700">
